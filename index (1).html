@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R Visual Studio portfolio</title>
+<meta name="description" content="R Visual Studio — brand identity and video editing. Logo design, motion graphics, visual systems.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- Apply saved/preferred theme before first paint to avoid a flash -->
+<script>
+(function(){
+  try{
+    var saved = localStorage.getItem('rv-theme');
+    var theme = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
+  }catch(e){
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+</script>
+
+<style>
+  /* ============================================================
+     TOKENS
+     ============================================================ */
+  :root{
+    --ink:        #070B16;
+    --panel:      #0E1526;
+    --panel-2:    #131B30;
+    --glass:      rgba(255,255,255,0.045);
+    --line:       rgba(255,255,255,0.10);
+    --text:       #EEF1FB;
+    --text-dim:   #8A93B3;
+
+    --blue:       #3D6BFF;
+    --blue-2:     #6E8CFF;
+    --indigo:     #6236E8;
+    --cyan:       #37E0F5;
+
+    --font-display: 'Sora', sans-serif;
+    --font-body:    'Inter', sans-serif;
+    --font-mono:    'JetBrains Mono', monospace;
+
+    --container: 1180px;
+    --edge: clamp(1.5rem, 5vw, 4rem);
+    --r-lg: 26px;
+    --r-md: 18px;
+    --r-sm: 12px;
+
+    --header-bg: rgba(7,11,22,0.72);
+    --aurora-op: 1;
+  }
+
+  [data-theme="light"]{
+    --header-bg: rgba(255,255,255,0.72);
+    --aurora-op: 0.5;
+
+    --ink:        #F3F6FD;
+    --panel:      #FFFFFF;
+    --panel-2:    #E9F0FC;
+    --glass:      rgba(15,30,60,0.045);
+    --line:       rgba(15,30,60,0.12);
+    --text:       #0B1526;
+    --text-dim:   #5A6480;
+
+    --blue:       #2F5FE0;
+    --blue-2:     #1D4ED8;
+    --indigo:     #5B32C9;
+    --cyan:       #09748C;
+  }
+
+  *,*::before,*::after{
+    transition-property: background-color, border-color, color, box-shadow;
+    transition-duration: 0.35s;
+    transition-timing-function: ease;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *,*::before,*::after{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+  }
+
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    transition:background-color 0.35s ease, color 0.35s ease;
+  }
+
+  h1,h2,h3{ font-family:var(--font-display); margin:0; line-height:1.05; letter-spacing:-0.02em; }
+  p{ margin:0; }
+  a{ color:inherit; text-decoration:none; }
+  ul{ margin:0; padding:0; list-style:none; }
+  button{ font-family:inherit; cursor:pointer; }
+  img,svg{ display:block; max-width:100%; }
+
+  .wrap{ max-width:var(--container); margin:0 auto; padding-left:var(--edge); padding-right:var(--edge); }
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    display:inline-flex;
+    align-items:center;
+    gap:0.55em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:16px; height:1px;
+    background:var(--cyan);
+    display:inline-block;
+  }
+
+  .grad-text{
+    background:linear-gradient(100deg, var(--blue-2), var(--cyan));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+
+  ::selection{ background:var(--blue); color:#fff; }
+  a:focus-visible, button:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; border-radius:4px; }
+
+  .reveal{ opacity:0; transform:translateY(26px); transition:opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.is-visible{ opacity:1; transform:translateY(0); }
+
+  /* scroll progress */
+  #progressBar{
+    position:fixed; top:0; left:0; height:3px; width:0%;
+    background:linear-gradient(90deg, var(--blue), var(--cyan));
+    z-index:200; transition:width 0.1s linear;
+  }
+
+  /* ============================================================
+     AURORA BACKDROP (signature atmosphere)
+     ============================================================ */
+  .aurora{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    opacity:var(--aurora-op);
+    background:
+      radial-gradient(38% 32% at 78% 8%, rgba(61,107,255,0.35), transparent 60%),
+      radial-gradient(30% 26% at 12% 18%, rgba(55,224,245,0.16), transparent 60%),
+      radial-gradient(45% 38% at 50% 100%, rgba(98,54,232,0.22), transparent 60%);
+    filter:blur(10px);
+    animation:drift 22s ease-in-out infinite alternate;
+    transition:opacity 0.35s ease;
+  }
+  @keyframes drift{
+    0%{ transform:translate3d(0,0,0) scale(1); }
+    100%{ transform:translate3d(-1.5%, 2%, 0) scale(1.05); }
+  }
+
+  main, header, footer{ position:relative; z-index:1; }
+
+  /* ============================================================
+     HEADER
+     ============================================================ */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:var(--header-bg);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-row{ display:flex; align-items:center; justify-content:space-between; height:76px; }
+  .brand{ display:flex; align-items:center; gap:0; }
+  .brand-mark{ height:66px; width:auto; max-width:200px; flex:none; object-fit:contain; }
+  .brand-name{ font-family:var(--font-display); font-weight:700; font-size:1.05rem; letter-spacing:-0.01em; }
+  .brand .brand-name{ margin-left:-1.5rem; }
+  .brand-name em{ font-style:normal; color:var(--cyan); }
+
+  nav.links{ display:flex; align-items:center; gap:2.3rem; }
+  nav.links a{ font-size:0.9rem; color:var(--text-dim); position:relative; padding:0.3rem 0; transition:color 0.25s ease; }
+  nav.links a:hover{ color:var(--text); }
+  nav.links a::after{ content:""; position:absolute; left:0; bottom:0; width:0; height:2px; border-radius:2px; background:linear-gradient(90deg,var(--blue),var(--cyan)); transition:width 0.25s ease; }
+  nav.links a:hover::after{ width:100%; }
+
+  .header-right{ display:flex; align-items:center; gap:1.1rem; }
+  .cta-small{
+    font-size:0.85rem; font-weight:600; color:#06101F;
+    background:linear-gradient(100deg, var(--cyan), var(--blue-2));
+    padding:0.6rem 1.3rem; border-radius:999px;
+    transition:transform 0.25s ease, box-shadow 0.25s ease, background-color 0.35s ease, color 0.35s ease;
+    display:inline-block;
+  }
+  .cta-small:hover{ transform:translateY(-2px); box-shadow:0 10px 24px -8px rgba(61,107,255,0.55); }
+
+  .menu-toggle{ display:none; background:none; color:var(--text); width:40px; height:40px; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:10px; }
+
+  .theme-toggle{
+    width:40px; height:40px; flex:none;
+    background:var(--glass); color:var(--text);
+    border:1px solid var(--line); border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform 0.25s ease, border-color 0.25s ease, background-color 0.35s ease, color 0.35s ease;
+  }
+  .theme-toggle:hover{ border-color:var(--cyan); color:var(--cyan); transform:translateY(-1px); }
+  .theme-toggle svg{ width:18px; height:18px; }
+  .theme-toggle .icon-moon{ display:none; }
+  [data-theme="light"] .theme-toggle .icon-sun{ display:none; }
+  [data-theme="light"] .theme-toggle .icon-moon{ display:block; }
+  .menu-toggle svg{ width:18px; height:18px; }
+  nav.links.open{
+    display:flex; position:fixed; top:76px; left:0; right:0;
+    background:var(--ink); flex-direction:column; padding:1.5rem var(--edge);
+    border-bottom:1px solid var(--line); gap:1.2rem;
+  }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  .hero{ padding-top:calc(76px + 6rem); padding-bottom:5rem; }
+  .hero-grid{ display:grid; grid-template-columns:1.15fr 0.85fr; gap:3rem; align-items:center; }
+
+  .hero h1{ font-size:clamp(2.6rem, 5.4vw, 4.6rem); font-weight:800; margin-top:1.2rem; max-width:13ch; }
+  .hero-sub{ margin-top:1.6rem; max-width:46ch; color:var(--text-dim); font-size:1.08rem; }
+  .hero-actions{ margin-top:2.4rem; display:flex; gap:1rem; flex-wrap:wrap; }
+
+  .btn{
+    font-size:0.92rem; font-weight:600; padding:0.95rem 1.7rem; border-radius:999px;
+    display:inline-flex; align-items:center; gap:0.6rem;
+    transition:transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease, background-color 0.35s ease, color 0.35s ease;
+  }
+  .btn-solid{ background:linear-gradient(100deg, var(--blue), var(--indigo)); color:#fff; }
+  .btn-solid:hover{ transform:translateY(-2px); box-shadow:0 14px 30px -10px rgba(61,107,255,0.6); }
+  .btn-line{ border:1px solid var(--line); color:var(--text); }
+  .btn-line:hover{ border-color:var(--cyan); color:var(--cyan); }
+
+  /* hero visual: layered tilted card stack */
+  .stack{ position:relative; height:380px; }
+  .stack-card{
+    position:absolute; width:78%; aspect-ratio:4/3; left:11%; top:8%;
+    border-radius:var(--r-md); overflow:hidden;
+    border:1px solid var(--line);
+    box-shadow:0 30px 60px -25px rgba(0,0,0,0.6);
+    transition:transform 0.5s cubic-bezier(.2,.8,.2,1);
+  }
+  .stack-card img{ width:100%; height:100%; object-fit:cover; }
+  .stack-card:nth-child(1){ transform:rotate(-9deg) translate(-14%, 6%); z-index:1; }
+  .stack-card:nth-child(2){ transform:rotate(4deg) translate(10%, -4%); z-index:2; }
+  .stack-card:nth-child(3){ transform:rotate(-2deg) translate(-2%, 14%); z-index:3; }
+  .stack:hover .stack-card:nth-child(1){ transform:rotate(-14deg) translate(-20%, 2%); }
+  .stack:hover .stack-card:nth-child(2){ transform:rotate(7deg) translate(14%, -8%); }
+  .stack:hover .stack-card:nth-child(3){ transform:rotate(-3deg) translate(-4%, 18%); }
+
+  .hero-tags{ margin-top:2.4rem; display:flex; flex-wrap:wrap; gap:0.6rem; }
+  .hero-tags span{
+    font-family:var(--font-mono); font-size:0.72rem; color:var(--text-dim);
+    border:1px solid var(--line); padding:0.42rem 0.85rem; border-radius:999px;
+    background:var(--glass);
+  }
+
+  /* ============================================================
+     SECTION SHELL
+     ============================================================ */
+  section{ padding:6.5rem 0; position:relative; }
+  .section-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:2rem; margin-bottom:3.2rem; flex-wrap:wrap; }
+  .section-head h2{ font-size:clamp(1.9rem, 3.4vw, 2.7rem); margin-top:0.8rem; font-weight:700; }
+  .section-head .desc{ max-width:34ch; color:var(--text-dim); font-size:0.96rem; }
+
+  /* ============================================================
+     SERVICES
+     ============================================================ */
+  .tracks{ display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+  .track{
+    border:1px solid var(--line); border-radius:var(--r-lg);
+    padding:2.6rem; background:var(--glass);
+    backdrop-filter:blur(6px);
+    position:relative; overflow:hidden;
+    transition:transform 0.4s ease, border-color 0.4s ease, background-color 0.35s ease, color 0.35s ease;
+  }
+  .track:hover{ transform:translateY(-6px); border-color:rgba(255,255,255,0.22); }
+  .track::before{
+    content:""; position:absolute; top:-40%; right:-30%; width:60%; height:60%;
+    border-radius:50%; filter:blur(50px); opacity:0.5; pointer-events:none;
+  }
+  .track.logo::before{ background:var(--blue); }
+  .track.video::before{ background:var(--cyan); }
+  .track-icon{ width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; }
+  .track.logo .track-icon{ background:linear-gradient(135deg, var(--blue), var(--indigo)); }
+  .track.video .track-icon{ background:linear-gradient(135deg, var(--cyan), var(--blue)); }
+  .track-icon svg{ width:22px; height:22px; }
+  .track h3{ font-size:1.55rem; margin-top:0; }
+  .track p.copy{ color:var(--text-dim); font-size:0.96rem; max-width:38ch; margin-top:0.9rem; }
+  .track ul{ margin-top:1.5rem; display:flex; flex-direction:column; gap:0.7rem; }
+  .track ul li{ font-size:0.9rem; color:var(--text); display:flex; align-items:center; gap:0.7rem; }
+  .track ul li::before{ content:""; width:5px; height:5px; border-radius:50%; flex:none; }
+  .track.logo ul li::before{ background:var(--blue-2); }
+  .track.video ul li::before{ background:var(--cyan); }
+
+  /* ============================================================
+     WORK
+     ============================================================ */
+  .filters{ display:flex; gap:0.6rem; flex-wrap:wrap; }
+  .filters button{
+    font-size:0.85rem; font-weight:500;
+    background:var(--glass); border:1px solid var(--line); color:var(--text-dim);
+    padding:0.55rem 1.2rem; border-radius:999px;
+    transition:all 0.25s ease;
+  }
+  .filters button.active, .filters button:hover{ border-color:var(--cyan); color:var(--cyan); }
+  .video-note{ font-size:0.86rem; color:var(--text-dim); margin-top:-1.8rem; margin-bottom:2.4rem; }
+
+  .grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:1.5rem; margin-top:0; }
+  .card{
+    border:1px solid var(--line); border-radius:var(--r-md); overflow:hidden;
+    background:var(--panel);
+    transition:transform 0.4s cubic-bezier(.2,.8,.2,1), border-color 0.4s ease, box-shadow 0.4s ease, background-color 0.35s ease, color 0.35s ease;
+  }
+  .card:nth-child(3n+1){ transform:rotate(-0.6deg); }
+  .card:nth-child(3n+2){ transform:rotate(0.5deg); }
+  .card:nth-child(3n+3){ transform:rotate(-0.3deg); }
+  .card:hover{ transform:translateY(-8px) rotate(0deg) !important; border-color:rgba(255,255,255,0.24); box-shadow:0 26px 50px -22px rgba(61,107,255,0.35); }
+  .card-media{ aspect-ratio:4/3; position:relative; overflow:hidden; background:linear-gradient(155deg,var(--panel-2),var(--panel)); }
+  .card-media img{ width:100%; height:100%; object-fit:cover; transition:transform 0.6s ease; }
+  .card:hover .card-media img{ transform:scale(1.06); }
+  .card-body{ padding:1.2rem 1.3rem 1.5rem; }
+  .card-tc{ font-family:var(--font-mono); font-size:0.68rem; color:var(--text-dim); }
+  .card-title{ font-size:1.05rem; margin-top:0.5rem; font-weight:600; font-family:var(--font-display); }
+  .card-tag{
+    display:inline-block; margin-top:0.8rem;
+    font-size:0.7rem; font-weight:500; letter-spacing:0.02em;
+    padding:0.3rem 0.7rem; border-radius:999px;
+    background:rgba(61,107,255,0.14); color:var(--blue-2);
+  }
+  .card.is-hidden{ display:none; }
+
+  /* ============================================================
+     ABOUT
+     ============================================================ */
+  .about-copy p{ color:var(--text-dim); font-size:1.03rem; margin-bottom:1.1rem; }
+  .about-copy p:last-of-type{ margin-bottom:0; }
+  .about-copy strong{ color:var(--text); font-weight:600; }
+  .skills{ margin-top:1.8rem; display:flex; flex-wrap:wrap; gap:0.55rem; }
+  .skills span{
+    font-family:var(--font-mono); font-size:0.72rem; color:var(--text-dim);
+    border:1px solid var(--line); padding:0.42rem 0.8rem; border-radius:999px;
+    background:var(--glass);
+  }
+
+  /* ============================================================
+     CONTACT
+     ============================================================ */
+  .contact{
+    margin:0 var(--edge);
+    border-radius:32px;
+    background:linear-gradient(135deg, rgba(61,107,255,0.18), rgba(98,54,232,0.16) 45%, rgba(55,224,245,0.12));
+    border:1px solid var(--line);
+    overflow:hidden;
+    position:relative;
+  }
+  .contact::before{
+    content:""; position:absolute; top:-30%; left:60%; width:60%; height:120%;
+    background:radial-gradient(circle, rgba(55,224,245,0.25), transparent 65%);
+    pointer-events:none;
+  }
+  .contact-inner{ text-align:center; max-width:640px; margin:0 auto; padding:5rem 1.5rem; position:relative; }
+  .contact h2{ font-size:clamp(2.1rem, 5vw, 3.3rem); }
+  .contact p.lead{ margin-top:1.2rem; color:var(--text-dim); font-size:1.05rem; }
+  .contact-email{
+    display:inline-block; margin-top:2.1rem; font-weight:600;
+    font-size:1.15rem; padding-bottom:0.4rem; border-bottom:1px solid var(--line);
+    transition:border-color 0.25s ease, color 0.25s ease, background-color 0.35s ease;
+  }
+  .contact-email:hover{ color:var(--cyan); border-color:var(--cyan); }
+
+  .socials{ margin-top:2.6rem; display:flex; justify-content:center; gap:0.9rem; flex-wrap:wrap; }
+  .social-btn{
+    width:54px; height:54px; border-radius:50%;
+    border:1px solid var(--line); background:rgba(255,255,255,0.04);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.15rem; color:var(--text);
+    transition:all 0.3s ease;
+  }
+  .social-btn:hover{ background:linear-gradient(135deg, var(--blue), var(--cyan)); border-color:transparent; color:#06101F; transform:translateY(-3px) scale(1.05); }
+
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+  footer{
+    padding:1.6rem 0;
+    background:#171923;
+    text-align:center;
+  }
+  [data-theme="light"] footer{ background:#171923; }
+  .footer-line{
+    color:#EDEFF6;
+    font-size:0.95rem;
+    font-family:var(--font-body);
+  }
+  .footer-dot{ color:#7C8299; margin:0 0.5rem; }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 980px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .stack{ height:300px; margin-top:1rem; }
+    .tracks{ grid-template-columns:1fr; }
+    .grid{ grid-template-columns:repeat(2, 1fr); }
+  }
+  @media (max-width: 760px){
+    nav.links{ display:none; }
+    .menu-toggle{ display:flex; }
+    .grid{ grid-template-columns:1fr; }
+    section{ padding:4.5rem 0; }
+    .contact{ margin:0 1rem; border-radius:22px; }
+  }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JC2JT71DMF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-JC2JT71DMF');
+</script>
+</head>
+<body>
+
+<div id="progressBar"></div>
+<div class="aurora"></div>
+
+<header>
+  <div class="wrap nav-row">
+    <a href="#top" class="brand" aria-label="R Visual Studio home">
+      <!-- EDIT: this image is hosted on Discord's CDN and its link can expire — re-host it yourself for a permanent logo -->
+      <img src="R visual studio logo.webp" alt="R Visual Studio logo" class="brand-mark">
+      <span class="brand-name">VISUAL <em>STUDIO</em></span>
+    </a>
+
+    <nav class="links" id="navLinks">
+      <a href="#work">Work</a>
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.6A9 9 0 1 1 11.4 3a7 7 0 0 0 9.6 9.6Z"/></svg>
+      </button>
+      <a href="#contact" class="cta-small">Start a project</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Brand &amp; Motion Studio</p>
+      <h1>Turning Ideas into <span class="grad-text">digital</span> experiences.</h1>
+      <p class="hero-sub">
+        Branding, Motion Graphics, and Web Design that combine creativity, strategy, and performance.</p>
+      <div class="hero-tags">
+        <span>Graphic Design</span>
+        <span>Logo Design</span>
+        <span>Video Editing</span>
+        <span>Social Media Design</span>
+        <span>Print Design</span>
+        <span>Vector Illustration</span>
+        <span>Branding Design</span>
+        <span>Web Design</span>
+      </div>
+      <div class="hero-actions">
+        <a href="#work" class="btn btn-solid">View my projects</a>
+        <a href="#contact" class="btn btn-line">Contact me</a>
+      </div>
+    </div>
+
+    <!-- EDIT: swap these three for whichever projects you want to feature up top -->
+    <div class="stack" aria-hidden="true">
+      <div class="stack-card">
+        <img src="https://i.pinimg.com/736x/67/45/b0/6745b054b85cf555f27d2493b5f2d42f.jpg" alt="">
+      </div>
+      <div class="stack-card">
+        <img src="https://i.pinimg.com/736x/6e/35/b2/6e35b2f4cfc0cfb1ca8b5722ef2c0c54.jpg" alt="">
+      </div>
+      <div class="stack-card">
+        <img src="https://i.pinimg.com/736x/85/e7/65/85e765908c0316ee1bc93ca0ffdf5f56.jpg" alt="">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">What I do</p>
+        <h2>Two crafts, one studio.</h2>
+      </div>
+    </div>
+
+    <div class="tracks">
+      <div class="track logo reveal">
+        <h3>Logo &amp; Brand Identity</h3>
+        <p class="copy">A logo that holds up on a business card and a billboard. Clean concepts, considered type, and a system you can actually use.</p>
+        <ul>
+          <li>Logo design &amp; brand marks</li>
+          <li>Color &amp; typography systems</li>
+          <li>Business cards &amp; stationery</li>
+          <li>Social media kits</li>
+        </ul>
+      </div>
+
+      <div class="track video reveal">
+        <h3>Video Editing</h3>
+        <p class="copy">From raw footage to a cut that keeps people watching — pacing, sound, color, and motion graphics that fit your story.</p>
+        <ul>
+          <li>Short-form &amp; reels editing</li>
+          <li>YouTube &amp; long-form editing</li>
+          <li>Motion graphics &amp; titles</li>
+          <li>Color grading &amp; sound design</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="work">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">Selected work</p>
+        <h2>My projects</h2>
+      </div>
+      <div class="filters" role="tablist" aria-label="Filter projects">
+        <button class="active" data-filter="all">All</button>
+        <button data-filter="Logo Design">Logo Design</button>
+        <button data-filter="Branding">Branding</button>
+        <button data-filter="Poster Design">Poster Design</button>
+        <button data-filter="Social Media">Social Media</button>
+        <button data-filter="Print Design">Print Design</button>
+        <button data-filter="Packaging">Packaging</button>
+      </div>
+    </div>
+
+    <div class="grid" id="projectGrid">
+
+      <div class="card reveal" data-category="Social Media">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/3c/9e/a2/3c9ea2828e9f7535fb82b48332df1292.jpg" alt="Burrito restaurant graphic design"></div>
+        <div class="card-body"><span class="card-tc">01</span><h3 class="card-title">Burrito — Restaurant Graphic</h3><span class="card-tag">Social Media</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Social Media">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/c8/b0/06/c8b0063ff06c34d87b1c3d224db67631.jpg" alt="Burger social media post"></div>
+        <div class="card-body"><span class="card-tc">02</span><h3 class="card-title">Burger — Social Post</h3><span class="card-tag">Social Media</span></div>
+      </div>
+
+      <div class="card reveal" data-category="branding">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/06/6e/c5/066ec5d8c88d8bf941fc358482ebb1b7.jpg" alt="Graphic design project"></div>
+        <div class="card-body"><span class="card-tc">03</span><h3 class="card-title">Visual Design Study</h3><span class="card-tag">branding</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Logo Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/eb/4b/4e/eb4b4e7c3e6892d23c86db18354f02dd.jpg" alt="3D bubble typography design"></div>
+        <div class="card-body"><span class="card-tc">04</span><h3 class="card-title">3D Logo</h3><span class="card-tag">Logo Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Poster Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/85/e7/65/85e765908c0316ee1bc93ca0ffdf5f56.jpg" alt="Formula 1 poster design"></div>
+        <div class="card-body"><span class="card-tc">05</span><h3 class="card-title">F1 — Poster Design</h3><span class="card-tag">Poster Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Branding">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/2e/db/de/2edbde86dc5483a08dc215e6c927ff35.jpg" alt="Can packaging design"></div>
+        <div class="card-body"><span class="card-tc">06</span><h3 class="card-title">Can — Packaging Design</h3><span class="card-tag">Packaging</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Poster Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/42/4f/cf/424fcf40b063a785a80f71fadf3cd070.jpg" alt="Graphic design artboard"></div>
+        <div class="card-body"><span class="card-tc">07</span><h3 class="card-title">Porsche Poster</h3><span class="card-tag">Poster Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Logo Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/67/45/b0/6745b054b85cf555f27d2493b5f2d42f.jpg" alt="Crochet brand graphic design"></div>
+        <div class="card-body"><span class="card-tc">08</span><h3 class="card-title">Minimal Design</h3><span class="card-tag">Logo Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Social Media">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/71/8d/1c/718d1ce26baf7e85966ab61568f806d0.jpg" alt="Graphic design project"></div>
+        <div class="card-body"><span class="card-tc">09</span><h3 class="card-title">Web Design</h3><span class="card-tag">Web Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Poster Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/89/20/1c/89201cfc205576eff1dda2d5c48401fe.jpg" alt="Graphic design project"></div>
+        <div class="card-body"><span class="card-tc">10</span><h3 class="card-title">Minimal Design</h3><span class="card-tag">Poster Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Poster Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/6e/35/b2/6e35b2f4cfc0cfb1ca8b5722ef2c0c54.jpg" alt="Graphic design project"></div>
+        <div class="card-body"><span class="card-tc">11</span><h3 class="card-title">Vinicius jr Poster</h3><span class="card-tag">Poster Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Packaging">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/f1/1a/93/f11a93f109d158690f23086aa75eeccc.jpg" alt="Graphic design project"></div>
+        <div class="card-body"><span class="card-tc">12</span><h3 class="card-title">Brand Packaging</h3><span class="card-tag">Packaging</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Packaging">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/2b/cb/50/2bcb50b2739eabdb99b9501ea2848c9b.jpg" alt="Graphic design project"></div>
+        <div class="card-body"><span class="card-tc">13</span><h3 class="card-title">Brand Packaging</h3><span class="card-tag">Packaging</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Print Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/38/d9/53/38d9532d3e261fccc770a161e4cf7a85.jpg" alt="Graphic design project"></div>
+        <div class="card-body"><span class="card-tc">14</span><h3 class="card-title">Pizza Menu</h3><span class="card-tag">Print Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Branding">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/1e/a3/c9/1ea3c974fcc29c436fe5f904e1b13991.jpg" alt="Graphic design project"></div>
+        <div class="card-body"><span class="card-tc">15</span><h3 class="card-title">Logo Mockups</h3><span class="card-tag">Branding</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Logo Design">
+        <div class="card-media"><img src="https://i.pinimg.com/1200x/bb/9a/16/bb9a16d027bb6b35f534464b864a93d6.jpg" alt="3D bubble typography design"></div>
+        <div class="card-body"><span class="card-tc">16</span><h3 class="card-title">Fiora logo</h3><span class="card-tag">Logo Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Logo Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/6e/74/00/6e7400761969f99a12a063afa581707d.jpg" alt="3D bubble typography design"></div>
+        <div class="card-body"><span class="card-tc">17</span><h3 class="card-title">Il Giardino logo</h3><span class="card-tag">Logo Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Packaging">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/23/4b/53/234b53e4d5245b8e1877f42cadf7579e.jpg" alt="Graphic design project"></div>
+        <div class="card-body"><span class="card-tc">18</span><h3 class="card-title">Brand Packaging</h3><span class="card-tag">Packaging</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Logo Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/ac/86/c0/ac86c07e36989fa7dc5c49d962a3b28d.jpg" alt="3D bubble typography design"></div>
+        <div class="card-body"><span class="card-tc">19</span><h3 class="card-title">Restaurant logo</h3><span class="card-tag">Logo Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Logo Design">
+        <div class="card-media"><img src="https://i.pinimg.com/1200x/be/d4/4e/bed44e221b3bb088edcd1690c8785bb1.jpg" alt="3D bubble typography design"></div>
+        <div class="card-body"><span class="card-tc">20</span><h3 class="card-title">Restaurant logo</h3><span class="card-tag">Logo Design</span></div>
+      </div>
+
+      <div class="card reveal" data-category="Logo Design">
+        <div class="card-media"><img src="https://i.pinimg.com/736x/29/20/7d/29207daa13c4873c8ecf5c7a0136d751.jpg" alt="3D bubble typography design"></div>
+        <div class="card-body"><span class="card-tc">21</span><h3 class="card-title">Restaurant logo</h3><span class="card-tag">Logo Design</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="about-copy reveal" style="max-width:640px;">
+      <p class="eyebrow">About me</p>
+      <h2 style="margin-top:0.8rem; font-size:clamp(1.9rem,3.4vw,2.7rem);">Design with Purpose.</h2>
+      <p style="margin-top:1.6rem;">I'm the designer behind <strong>R Visual Studio</strong>. a Graphic Designer, Motion Graphics Designer, and Web Designer with a passion for turning ideas into creative digital experiences. I create logos, brand identities, social media content, animations, and responsive websites that are visually appealing, user-friendly, and tailored to each client’s goals. Every project is an opportunity to combine creativity with functionality and deliver meaningful results.</p>
+      <div class="skills">
+        <span>Adobe Photoshop</span>
+        <span>Adobe Illustrator</span>
+        <span>Adobe Premiere Pro</span>
+        <span>Adobe After Effects</span>
+        <span>Adobe InDesign</span>
+        <span>Blender</span>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<section id="contact" style="padding-top:2rem; padding-bottom:6rem;">
+  <div class="wrap">
+    <div class="contact reveal">
+      <div class="contact-inner">
+        <p class="eyebrow" style="justify-content:center;">Get in touch</p>
+        <h2 style="margin-top:0.8rem;">Let's make something.</h2>
+        <p class="lead">Have a project in mind? Let's work together to create something unique and impactful.</p>
+
+        <a href="mailto:rafikforediting@gmail.com" class="contact-email">rafikforediting@gmail.com</a>
+
+        <div class="socials">
+          <a class="social-btn" href="https://www.instagram.com/r.visualdesign/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a class="social-btn" href="https://www.tiktok.com/@rafik.bmj" target="_blank" rel="noopener" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+          <a class="social-btn" href="https://fr.pinterest.com/rafikdesign1/" target="_blank" rel="noopener" aria-label="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+          <a class="social-btn" href="https://discord.com/channels/1490469168267657459/1491562097971302494" target="_blank" rel="noopener" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
+          <a class="social-btn" href="https://wa.me/213542682543" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="footer-line">© 2026 R Visual Studio <span class="footer-dot">|</span> Designer Portfolio</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var themeToggle = document.getElementById('themeToggle');
+  themeToggle.addEventListener('click', function(){
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try{ localStorage.setItem('rv-theme', next); }catch(e){}
+  });
+
+  var toggle = document.getElementById('menuToggle');
+  var links = document.getElementById('navLinks');
+  toggle.addEventListener('click', function(){
+    var open = links.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open);
+  });
+  links.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ links.classList.remove('open'); toggle.setAttribute('aria-expanded', false); });
+  });
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var bar = document.getElementById('progressBar');
+  function updateProgress(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var maxScroll = doc.scrollHeight - window.innerHeight;
+    var pct = maxScroll > 0 ? Math.min(100, (scrollTop/maxScroll)*100) : 0;
+    bar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, {passive:true});
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  var filterButtons = document.querySelectorAll('.filters button');
+  var cards = document.querySelectorAll('#projectGrid .card');
+  filterButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      filterButtons.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var filter = btn.getAttribute('data-filter');
+      cards.forEach(function(card){
+        var show = filter === 'all' || card.getAttribute('data-category') === filter;
+        card.classList.toggle('is-hidden', !show);
+      });
+    });
+  });
+
+  var revealEls = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.15});
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('is-visible'); });
+  }
+})();
+</script>
+
+<!-- ===== LANGUAGE SWITCHER: paste this whole block right before </body> (after your existing <script>) ===== -->
+<script>
+(function(){
+  /* Order of translations: [Arabic, Spanish, French]. English = the original text in your HTML. */
+  var D = {
+    // nav + header
+    "Work":[`أعمال`,`Trabajos`,`Réalisations`],
+    "Services":[`الخدمات`,`Servicios`,`Services`],
+    "About":[`من أنا`,`Acerca de`,`À propos`],
+    "Contact":[`تواصل`,`Contacto`,`Contact`],
+    "Start a project":[`ابدأ مشروعاً`,`Iniciar un proyecto`,`Lancer un projet`],
+    // hero
+    "Brand & Motion Studio":[`استوديو الهوية والموشن`,`Estudio de marca y motion`,`Studio de marque et motion`],
+    "Turning Ideas into digital experiences.":[
+      `نحوّل الأفكار إلى تجارب <span class="grad-text">رقمية</span>.`,
+      `Convirtiendo ideas en experiencias <span class="grad-text">digitales</span>.`,
+      `Transformer vos idées en expériences <span class="grad-text">numériques</span>.`],
+    "Branding, Motion Graphics, and Web Design that combine creativity, strategy, and performance.":[
+      `هوية بصرية وموشن غرافيك وتصميم مواقع تجمع بين الإبداع والاستراتيجية والأداء.`,
+      `Branding, motion graphics y diseño web que combinan creatividad, estrategia y rendimiento.`,
+      `Branding, motion design et design web qui allient créativité, stratégie et performance.`],
+    "Graphic Design":[`التصميم الجرافيكي`,`Diseño gráfico`,`Design graphique`],
+    "Logo Design":[`تصميم الشعارات`,`Diseño de logotipos`,`Création de logos`],
+    "Video Editing":[`مونتاج الفيديو`,`Edición de video`,`Montage vidéo`],
+    "Social Media Design":[`تصميم السوشيال ميديا`,`Diseño para redes sociales`,`Design pour réseaux sociaux`],
+    "Print Design":[`تصميم المطبوعات`,`Diseño impreso`,`Design print`],
+    "Vector Illustration":[`الرسم المتجهي`,`Ilustración vectorial`,`Illustration vectorielle`],
+    "Branding Design":[`تصميم الهوية البصرية`,`Diseño de identidad de marca`,`Design d'identité de marque`],
+    "Web Design":[`تصميم المواقع`,`Diseño web`,`Design web`],
+    "View my projects":[`شاهد مشاريعي`,`Ver mis proyectos`,`Voir mes projets`],
+    "Contact me":[`تواصل معي`,`Contáctame`,`Me contacter`],
+    // services
+    "What I do":[`ما أقدّمه`,`Lo que hago`,`Ce que je fais`],
+    "Two crafts, one studio.":[`حرفتان، استوديو واحد.`,`Dos oficios, un estudio.`,`Deux savoir-faire, un studio.`],
+    "Logo & Brand Identity":[`الشعار والهوية البصرية`,`Logotipo e identidad de marca`,`Logo et identité de marque`],
+    "A logo that holds up on a business card and a billboard. Clean concepts, considered type, and a system you can actually use.":[
+      `شعار يصمد على بطاقة العمل وعلى اللوحة الإعلانية. أفكار نظيفة، وخطوط مدروسة، ونظام يمكنك استخدامه فعلاً.`,
+      `Un logotipo que funciona igual en una tarjeta de visita que en una valla publicitaria. Conceptos limpios, tipografía cuidada y un sistema que realmente puedes usar.`,
+      `Un logo qui tient aussi bien sur une carte de visite que sur un panneau d'affichage. Des concepts épurés, une typographie soignée et un système réellement utilisable.`],
+    "Logo design & brand marks":[`تصميم الشعارات والعلامات`,`Diseño de logotipos y marcas`,`Création de logos et signes de marque`],
+    "Color & typography systems":[`أنظمة الألوان والخطوط`,`Sistemas de color y tipografía`,`Systèmes de couleurs et de typographie`],
+    "Business cards & stationery":[`بطاقات العمل والمطبوعات المكتبية`,`Tarjetas de visita y papelería`,`Cartes de visite et papeterie`],
+    "Social media kits":[`حزم السوشيال ميديا`,`Kits para redes sociales`,`Kits pour réseaux sociaux`],
+    "From raw footage to a cut that keeps people watching — pacing, sound, color, and motion graphics that fit your story.":[
+      `من اللقطات الخام إلى مونتاج يُبقي المشاهد متابعاً — إيقاع وصوت ولون وموشن غرافيك يناسب قصتك.`,
+      `De material en bruto a un montaje que mantiene la atención: ritmo, sonido, color y motion graphics al servicio de tu historia.`,
+      `Des rushes bruts à un montage qui captive — rythme, son, couleur et motion design au service de votre histoire.`],
+    "Short-form & reels editing":[`مونتاج الفيديوهات القصيرة والريلز`,`Edición de videos cortos y reels`,`Montage de formats courts et reels`],
+    "YouTube & long-form editing":[`مونتاج يوتيوب والفيديوهات الطويلة`,`Edición para YouTube y formatos largos`,`Montage YouTube et formats longs`],
+    "Motion graphics & titles":[`موشن غرافيك والعناوين`,`Motion graphics y títulos`,`Motion design et titrages`],
+    "Color grading & sound design":[`تصحيح الألوان وتصميم الصوت`,`Corrección de color y diseño sonoro`,`Étalonnage et design sonore`],
+    // work
+    "Selected work":[`أعمال مختارة`,`Trabajos seleccionados`,`Projets sélectionnés`],
+    "My projects":[`مشاريعي`,`Mis proyectos`,`Mes projets`],
+    "All":[`الكل`,`Todos`,`Tous`],
+    "Branding":[`الهوية البصرية`,`Branding`,`Branding`],
+    "branding":[`الهوية البصرية`,`Branding`,`Branding`],
+    "Poster Design":[`تصميم الملصقات`,`Diseño de carteles`,`Design d'affiches`],
+    "Social Media":[`سوشيال ميديا`,`Redes sociales`,`Réseaux sociaux`],
+    "Packaging":[`التغليف`,`Packaging`,`Packaging`],
+    "Burrito — Restaurant Graphic":[`بوريتو — تصميم مطعم`,`Burrito — Gráfico para restaurante`,`Burrito — Visuel de restaurant`],
+    "Burger — Social Post":[`برغر — منشور سوشيال ميديا`,`Burger — Publicación social`,`Burger — Post réseaux sociaux`],
+    "Visual Design Study":[`دراسة تصميم بصري`,`Estudio de diseño visual`,`Étude de design visuel`],
+    "3D Logo":[`شعار ثلاثي الأبعاد`,`Logotipo 3D`,`Logo 3D`],
+    "F1 — Poster Design":[`F1 — تصميم ملصق`,`F1 — Diseño de cartel`,`F1 — Affiche`],
+    "Can — Packaging Design":[`علبة — تصميم تغليف`,`Lata — Diseño de packaging`,`Canette — Design d'emballage`],
+    "Porsche Poster":[`ملصق بورش`,`Cartel Porsche`,`Affiche Porsche`],
+    "Minimal Design":[`تصميم مينيمال`,`Diseño minimalista`,`Design minimaliste`],
+    "Vinicius jr Poster":[`ملصق فينيسيوس جونيور`,`Cartel de Vinicius Jr`,`Affiche Vinicius Jr`],
+    "Brand Packaging":[`تغليف العلامة التجارية`,`Packaging de marca`,`Packaging de marque`],
+    "Pizza Menu":[`قائمة بيتزا`,`Menú de pizza`,`Menu pizza`],
+    "Logo Mockups":[`نماذج الشعار`,`Maquetas de logotipo`,`Maquettes de logo`],
+    "Fiora logo":[`شعار Fiora`,`Logotipo Fiora`,`Logo Fiora`],
+    "Il Giardino logo":[`شعار Il Giardino`,`Logotipo Il Giardino`,`Logo Il Giardino`],
+    "Restaurant logo":[`شعار مطعم`,`Logotipo de restaurante`,`Logo de restaurant`],
+    // about
+    "About me":[`من أنا`,`Sobre mí`,`À propos de moi`],
+    "Design with Purpose.":[`تصميم بهدف.`,`Diseño con propósito.`,`Du design avec un but.`],
+    // contact + footer
+    "Get in touch":[`تواصل معي`,`Ponte en contacto`,`Contactez-moi`],
+    "Let's make something.":[`لنصنع شيئاً معاً.`,`Hagamos algo juntos.`,`Créons quelque chose.`],
+    "Have a project in mind? Let's work together to create something unique and impactful.":[
+      `لديك مشروع في بالك؟ لنعمل معاً على صنع شيء فريد ومؤثر.`,
+      `¿Tienes un proyecto en mente? Trabajemos juntos para crear algo único e impactante.`,
+      `Un projet en tête ? Travaillons ensemble pour créer quelque chose d'unique et d'impactant.`],
+    "© 2026 R Visual Studio | Designer Portfolio":[
+      `© 2026 R Visual Studio <span class="footer-dot">|</span> معرض أعمال المصمم`,
+      `© 2026 R Visual Studio <span class="footer-dot">|</span> Portafolio de diseñador`,
+      `© 2026 R Visual Studio <span class="footer-dot">|</span> Portfolio de designer`]
+  };
+  // Long text matched by its beginning
+  var PREFIX = [
+    ["I'm the designer behind", [
+      `أنا المصمم وراء <strong>R Visual Studio</strong>، مصمم جرافيك وموشن غرافيك ومصمم مواقع، شغوف بتحويل الأفكار إلى تجارب رقمية إبداعية. أصمم الشعارات والهويات البصرية ومحتوى السوشيال ميديا والرسوم المتحركة والمواقع المتجاوبة، بحيث تكون جذابة بصرياً وسهلة الاستخدام ومصممة وفق أهداف كل عميل. كل مشروع فرصة للجمع بين الإبداع والوظيفة وتحقيق نتائج ذات معنى.`,
+      `Soy el diseñador detrás de <strong>R Visual Studio</strong>, diseñador gráfico, de motion graphics y web, apasionado por convertir ideas en experiencias digitales creativas. Creo logotipos, identidades de marca, contenido para redes sociales, animaciones y sitios web responsivos que son atractivos, fáciles de usar y adaptados a los objetivos de cada cliente. Cada proyecto es una oportunidad de unir creatividad y funcionalidad para lograr resultados con sentido.`,
+      `Je suis le designer derrière <strong>R Visual Studio</strong>, graphiste, motion designer et web designer, passionné par la transformation des idées en expériences numériques créatives. Je conçois des logos, identités de marque, contenus pour les réseaux sociaux, animations et sites responsives, esthétiques, intuitifs et adaptés aux objectifs de chaque client. Chaque projet est l'occasion d'allier créativité et fonctionnalité pour livrer des résultats qui comptent.`]]
+  ];
+
+  var SEL = 'nav.links a, .cta-small, .eyebrow, h1, h2, h3, .hero-sub, .hero-tags span, .btn, .filters button, .track p.copy, .track li, .card-tag, .about-copy > p:not(.eyebrow), .contact p.lead, .footer-line';
+  var LANGS = [
+    {code:'en', label:'English',  short:'EN'},
+    {code:'ar', label:'العربية',   short:'AR'},
+    {code:'es', label:'Español',  short:'ES'},
+    {code:'fr', label:'Français', short:'FR'}
+  ];
+  var IDX = {ar:0, es:1, fr:2};
+  var html = document.documentElement;
+
+  // ---- collect translatable elements & remember original English
+  var items = [];
+  document.querySelectorAll(SEL).forEach(function(el){
+    var key = el.textContent.replace(/\s+/g,' ').trim().replace('Montion','Motion'); // also tolerates the "Montion" typo
+    var tr = D[key];
+    if(!tr){ for(var i=0;i<PREFIX.length;i++){ if(key.indexOf(PREFIX[i][0])===0){ tr = PREFIX[i][1]; break; } } }
+    if(tr) items.push({el:el, en:el.innerHTML, tr:tr});
+  });
+
+  // ---- styles
+  var css = document.createElement('style');
+  css.textContent =
+    '.lang-switch{position:relative}' +
+    '.lang-btn{height:40px;padding:0 .8rem;display:flex;align-items:center;gap:.45rem;background:var(--glass);color:var(--text);border:1px solid var(--line);border-radius:10px;font-family:var(--font-mono);font-size:.78rem;letter-spacing:.06em;transition:transform .25s ease,border-color .25s ease,color .25s ease}' +
+    '.lang-btn:hover,.lang-switch.open .lang-btn{border-color:var(--cyan);color:var(--cyan)}' +
+    '.lang-btn svg{width:16px;height:16px}' +
+    '.lang-menu{display:none;position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.35rem;box-shadow:0 18px 40px -16px rgba(0,0,0,.5);z-index:300}' +
+    '.lang-switch.open .lang-menu{display:block}' +
+    '.lang-menu button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:1rem;background:none;border:0;color:var(--text-dim);font-size:.9rem;padding:.55rem .75rem;border-radius:8px;text-align:start}' +
+    '.lang-menu button:hover{background:var(--glass);color:var(--text)}' +
+    '.lang-menu button.active{color:var(--cyan)}' +
+    '.brand{direction:ltr}' +
+    'html:not([lang="en"]) .hero h1{max-width:18ch}' +
+    'html[dir="rtl"] body,html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3,html[dir="rtl"] .btn,html[dir="rtl"] .card-title{font-family:"Cairo",var(--font-body)}' +
+    'html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3{letter-spacing:0;line-height:1.25}' +
+    'html[dir="rtl"] .eyebrow,html[dir="rtl"] .hero-tags span,html[dir="rtl"] .card-tc{letter-spacing:0}';
+  document.head.appendChild(css);
+
+  // ---- switcher UI (inserted in the header, before the theme toggle)
+  var wrap = document.createElement('div');
+  wrap.className = 'lang-switch';
+  wrap.innerHTML =
+    '<button class="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>' +
+      '<span class="lang-cur">EN</span>' +
+    '</button>' +
+    '<div class="lang-menu" role="menu">' +
+      LANGS.map(function(l){ return '<button type="button" role="menuitem" data-lang="'+l.code+'"><span>'+l.label+'</span><span>'+l.short+'</span></button>'; }).join('') +
+    '</div>';
+  var right = document.querySelector('.header-right');
+  right.insertBefore(wrap, right.firstChild);
+
+  var btn = wrap.querySelector('.lang-btn');
+  function setOpen(o){ wrap.classList.toggle('open', o); btn.setAttribute('aria-expanded', o); }
+  btn.addEventListener('click', function(e){ e.stopPropagation(); setOpen(!wrap.classList.contains('open')); });
+  document.addEventListener('click', function(){ setOpen(false); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') setOpen(false); });
+
+  // ---- apply a language
+  function apply(code){
+    if(code==='ar' && !document.getElementById('cairo-font')){
+      var f = document.createElement('link');
+      f.id = 'cairo-font'; f.rel = 'stylesheet';
+      f.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap';
+      document.head.appendChild(f);
+    }
+    html.setAttribute('lang', code);
+    html.setAttribute('dir', code==='ar' ? 'rtl' : 'ltr');
+    items.forEach(function(it){ it.el.innerHTML = code==='en' ? it.en : it.tr[IDX[code]]; });
+    wrap.querySelector('.lang-cur').textContent = code.toUpperCase();
+    wrap.querySelectorAll('.lang-menu button').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-lang')===code); });
+    try{ localStorage.setItem('rv-lang', code); }catch(e){}
+  }
+  wrap.querySelectorAll('.lang-menu button').forEach(function(b){
+    b.addEventListener('click', function(){ apply(b.getAttribute('data-lang')); setOpen(false); });
+  });
+
+  // English first by default; remembers the visitor's last choice
+  var saved = 'en';
+  try{ saved = localStorage.getItem('rv-lang') || 'en'; }catch(e){}
+  apply(LANGS.some(function(l){ return l.code===saved; }) ? saved : 'en');
+})();
+</script>
+
+
+</body>
+</html>
